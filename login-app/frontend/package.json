@@ -13,6 +13,7 @@
     "axios": "^1.6.2"
   },
   "scripts": {
+    "prebuild": "npm ci",
     "start": "react-scripts start",
     "build": "react-scripts build"
   },
