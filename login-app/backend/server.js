@@ -11,7 +11,7 @@ const JWT_SECRET = "your_super_secret_jwt_key_2024";
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "https://logintestt.vercel.app/login" // ← replace with your Vercel URL
+    "https://logintestt.vercel.app"  // Fixed: removed /login path
   ],
   credentials: true
 }));
