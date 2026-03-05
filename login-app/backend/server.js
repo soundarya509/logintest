@@ -6,11 +6,19 @@ const app = express();
 const PORT = 5000;
 const JWT_SECRET = "your_super_secret_jwt_key_2024";
 
-// Middleware
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+// ── Middleware ────────────────────────────────────────────────
+// Enable CORS for localhost (dev) and Vercel frontend (prod)
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://logintestt.vercel.app/login" // ← replace with your Vercel URL
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
-// In-memory user store (single valid user)
+// ── In-memory user store (single valid user) ──────────────────
 const VALID_USER = {
   username: "admin",
   password: "admin",
@@ -20,37 +28,24 @@ const VALID_USER = {
   lastLogin: null,
 };
 
-// POST /login
+// ── POST /login ───────────────────────────────────────────────
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
-  // Validate input presence
   if (!username || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "Username and password are required.",
-    });
+    return res.status(400).json({ success: false, message: "Username and password are required." });
   }
 
-  // Validate credentials
-  if (
-    username.trim() !== VALID_USER.username ||
-    password !== VALID_USER.password
-  ) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid username or password. Please try again.",
-    });
+  if (username.trim() !== VALID_USER.username || password !== VALID_USER.password) {
+    return res.status(401).json({ success: false, message: "Invalid username or password. Please try again." });
   }
 
-  // Generate JWT token
   const token = jwt.sign(
     { username: VALID_USER.username, role: VALID_USER.role },
     JWT_SECRET,
     { expiresIn: "1h" }
   );
 
-  // Update last login
   VALID_USER.lastLogin = new Date().toISOString();
 
   return res.status(200).json({
@@ -67,7 +62,7 @@ app.post("/login", (req, res) => {
   });
 });
 
-// GET /verify - verify JWT token
+// ── GET /verify ──────────────────────────────────────────────
 app.get("/verify", (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -83,11 +78,12 @@ app.get("/verify", (req, res) => {
   }
 });
 
-// Health check
+// ── GET /health ──────────────────────────────────────────────
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// ── Start server ─────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });
